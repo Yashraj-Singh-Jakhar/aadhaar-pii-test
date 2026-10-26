@@ -235,7 +235,8 @@ class MoneyTests(unittest.TestCase):
         import run
         for e in ('HTTP 429: {"error": {"type": "insufficient_quota", "code": "credit_balance_exhausted"}}',
                   'HTTP 400: {"error": {"message": "Your credit balance is too low to access the Anthropic API."}}',
-                  'HTTP 402: {"error": {"type": "billing_error"}}'):
+                  'HTTP 402: {"error": {"type": "billing_error"}}',
+                  'HTTP 400: {"error": {"message": "You have reached your specified API usage limits."}}'):
             self.assertTrue(run.FATAL.search(e), e)
         for e in ('HTTP 429: {"error": {"message": "Rate limit reached for requests"}}',
                   'HTTP 429: {"error": {"status": "RESOURCE_EXHAUSTED", "message": "Quota exceeded for aiplatform"}}',

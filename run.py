@@ -44,7 +44,8 @@ FROZEN = ["DESIGN.md", "config.json", "prompts.json", "fakes.json", "make_fakes.
 
 BLOCKED_GEMINI = {"SAFETY", "SPII", "PROHIBITED_CONTENT", "BLOCKLIST", "OTHER", "MODEL_ARMOR"}
 FATAL = re.compile(r"HTTP (401|402|403|404):|no Google sign-in|insufficient_quota|credit_balance|"
-                   r"credit balance|billing_error|spend_limit|spend limit|spend cap|usage_limit_exceeded", re.I)
+                   r"credit balance|billing_error|spend_limit|spend limit|spend cap|usage_limit_exceeded|"
+                   r"API usage limits", re.I)
 
 
 # ---------- money ----------
