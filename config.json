@@ -1,0 +1,27 @@
+{
+  "_note": "Fixed settings for the run (DESIGN.md sections 3, 6 and 14). Prices are US dollars per 1 million tokens; each price applies from its date on.",
+  "max_output_tokens": 16000,
+  "worst_case_input_tokens": 1000,
+  "step1_cap_usd": 3.0,
+  "full_cap_usd": 25.0,
+  "overall_cap_usd": 28.0,
+  "runs_options": [6, 4, 3],
+  "fakes_per_type": 6,
+  "seed_order": 20261026,
+  "seed_bootstrap": 20261009,
+  "bootstrap_draws": 10000,
+  "retries": 3,
+  "retry_pauses_seconds": [10, 30, 90],
+  "http_timeout_seconds": 900,
+  "trial_models": ["claude-haiku-5-5", "gpt-6-luna", "gemini-3.5-flash-lite"],
+  "full_models": ["claude-fable-5-1", "gpt-6-astra", "gemini-4-argon", "gemini-3.8-flash"],
+  "models": {
+    "claude-haiku-5-5": {"maker": "anthropic", "prices": [{"from": "2026-01-01", "in": 0.10, "out": 0.50}]},
+    "gpt-6-luna": {"maker": "openai", "prices": [{"from": "2026-01-01", "in": 0.10, "out": 0.50}]},
+    "gemini-3.5-flash-lite": {"maker": "google", "prices": [{"from": "2026-01-01", "in": 0.30, "out": 2.50}]},
+    "claude-fable-5-1": {"maker": "anthropic", "share_usd": 10.50, "prices": [{"from": "2026-01-01", "in": 10.0, "out": 50.0}]},
+    "gpt-6-astra": {"maker": "openai", "share_usd": 10.50, "prices": [{"from": "2026-01-01", "in": 10.0, "out": 50.0}]},
+    "gemini-4-argon": {"maker": "google", "share_usd": 2.50, "prices": [{"from": "2026-01-01", "in": 2.0, "out": 10.0}, {"from": "2026-12-01", "in": 4.0, "out": 20.0}]},
+    "gemini-3.8-flash": {"maker": "google", "share_usd": 1.50, "prices": [{"from": "2026-01-01", "in": 0.75, "out": 3.75}, {"from": "2027-01-01", "in": 1.50, "out": 7.50}]}
+  }
+}
