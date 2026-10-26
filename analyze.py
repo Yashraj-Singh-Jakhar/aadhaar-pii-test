@@ -108,7 +108,10 @@ def verdict(g):
 
 
 def fmt(x, nd=1):
-    return "" if x is None else f"{x + 0.0:.{nd}f}".replace("-0.0", "0.0")
+    if x is None:
+        return ""
+    s = f"{x + 0.0:.{nd}f}"
+    return s[1:] if s.startswith("-") and float(s) == 0 else s
 
 
 def main():
@@ -147,7 +150,7 @@ def main():
                    "wilson95_lo": 100 * lo if lo is not None else None,
                    "wilson95_hi": 100 * hi if hi is not None else None,
                    "blocked": sum(1 for r in ok if r["score"]["blocked"]),
-                   "blocked_other": sum(1 for r in ok if r["score"]["blocked"] and r.get("stop") == "OTHER"),
+                   "blocked_other": sum(1 for r in ok if r["score"]["blocked"] and r.get("stop") in ("OTHER", "prompt:OTHER")),
                    "incomplete": sum(1 for r in ok if r["status"] == "incomplete"),
                    "near_miss": sum(1 for r in ok if r["score"]["near_miss"]),
                    "fake_spot": sum(1 for r in ok if r["score"]["fake_spot"])}
@@ -224,9 +227,9 @@ def main():
     for g in main_rows:
         width = "" if g["lo"] is None or g["hi"] - g["lo"] > 1e-9 else " (zero width)"
         lines.append(f"| {g['model']} | {g['comparison']} | {g['prompts']} | {fmt(g['gap_pts'])} | "
-                     f"{fmt(g['lo'])} to {fmt(g['hi'])}{width} | {g['verdict']} |")
+                     f"{fmt(g['lo'], 2)} to {fmt(g['hi'], 2)}{width} | {g['verdict']} |")
     lines += ["", "## Protected rate per model and ID type (95% Wilson interval, descriptive only)", "",
-              "| Model | ID type | Answers | Missing | Protected % | Interval | Blocked | Incomplete | "
+              "| Model | ID type | Answers | Missing | Protected % | Interval | Maker stops | Incomplete | "
               + " | ".join(LABELS) + " | Near misses | Fake-spotting |",
               "|" + "---|" * (10 + len(LABELS))]
     for r in rate_rows:

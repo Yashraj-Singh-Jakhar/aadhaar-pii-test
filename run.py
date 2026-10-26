@@ -43,6 +43,7 @@ FROZEN = ["DESIGN.md", "config.json", "prompts.json", "fakes.json", "make_fakes.
           "score.py", "analyze.py", "run.py"]
 
 BLOCKED_GEMINI = {"SAFETY", "SPII", "PROHIBITED_CONTENT", "BLOCKLIST", "OTHER", "MODEL_ARMOR"}
+FATAL = re.compile(r"HTTP (401|403|404):|no Google sign-in")
 
 
 # ---------- money ----------
@@ -150,8 +151,15 @@ def post(url, headers, body):
         return None, repr(e)
 
 
+HIDE_WORDS = []
+
+
 def hide_secrets(text):
     text = re.sub(r"(sk-|AIza|ya29\.)[A-Za-z0-9_\-\.]+", "[hidden]", str(text))
+    for w in HIDE_WORDS:
+        text = text.replace(w, "[project]")
+    text = re.sub(r"projects/\d+", "projects/[number]", text)
+    text = re.sub(r"[\w.+-]+@[\w-]+\.[\w.]+", "[email]", text)
     return text[:500]
 
 
@@ -166,6 +174,8 @@ class Keys:
     def ask(self, makers):
         if self.dry:
             return
+        if not sys.stdin.isatty():
+            sys.exit("Run this in your own Terminal window, so the keys can be typed in hidden.")
         if "anthropic" in makers:
             self.anthropic = getpass.getpass("Paste the Anthropic (Claude) key, then Enter (nothing will show): ").strip()
             self.workspace = input("Anthropic workspace ID (shows on screen; Enter alone if none): ").strip()
@@ -174,6 +184,8 @@ class Keys:
         if "google" in makers:
             self.project = (os.environ.get("GOOGLE_CLOUD_PROJECT")
                             or input("Google Cloud project ID (shows on screen): ").strip())
+            if self.project:
+                HIDE_WORDS.append(self.project)
 
     def google_token(self):
         with self._lock:
@@ -240,13 +252,14 @@ def call_openai(keys, model, prompt):
     elif st == "incomplete" and reason == "max_output_tokens":
         outcome = "incomplete"
     elif st == "incomplete" and reason == "content_filter":
-        outcome = "blocked"
+        outcome = "blocked"  # a maker-side filter stop (DESIGN.md section 14, Yashraj's decision 26 Oct)
     else:
         outcome = "unusual"
     stop = "refusal" if refused else (f"{st}:{reason}" if reason else st)
     return {"text": "".join(texts), "stop": stop, "outcome": outcome, "reply_model": data.get("model"),
             "tokens_in": usage.get("input_tokens", 0), "tokens_out": usage.get("output_tokens", 0),
-            "usage": usage}
+            "usage": usage, "reply_settings": {k: data.get(k) for k in
+                                               ("reasoning", "temperature", "top_p", "service_tier", "truncation")}}
 
 
 def call_google(keys, model, prompt):
@@ -369,11 +382,16 @@ def save(path, record):
             os.fsync(f.fileno())
 
 
-def run_one(j, keys, dry):
-    """One job with up to 3 retries. Returns (record, total cost of every attempt)."""
-    attempts, total_cost, last = 0, 0.0, None
+def run_one(j, keys, dry, ledger, limit_total=None, limit_model=None):
+    """One job with up to 3 retries. Each attempt first reserves its own worst case, so retries
+    cannot pass a money limit. Returns (record or None, total cost, money_stop)."""
+    attempts, total_cost, last, money_stop = 0, 0.0, None, False
     pauses = CONFIG["retry_pauses_seconds"]
     for attempt in range(CONFIG["retries"] + 1):
+        wc = worst_case(j["model"])
+        if not ledger.reserve(j["model"], wc, limit_total=limit_total, limit_model=limit_model):
+            money_stop = True
+            break
         attempts += 1
         started = datetime.datetime.now(datetime.timezone.utc)
         try:
@@ -384,12 +402,23 @@ def run_one(j, keys, dry):
         except Exception as e:
             r = {"error": hide_secrets(repr(e))}
         if "error" not in r:
-            total_cost += cost(j["model"], r["tokens_in"], r["tokens_out"], started.date().isoformat())
+            c = cost(j["model"], r["tokens_in"], r["tokens_out"], started.date().isoformat())
+        elif re.match(r"HTTP \d{3}:", r["error"]) or "no Google sign-in" in r["error"]:
+            c = 0.0  # the maker answered with an error code, or no call was made: not billed
+        else:
+            c = wc   # timeout, lost connection or unreadable reply: it may have been billed
+            r["error"] += " [no usage record: booked at the worst case]"
+        ledger.settle(j["model"], wc, c)
+        total_cost += c
         last = (r, started)
         if "error" not in r and r["outcome"] != "unusual":
             break
+        if "error" in r and FATAL.search(r["error"]):
+            break  # a setup problem: retrying will not help (the worker stops this model)
         if attempt < CONFIG["retries"] and not dry:
             time.sleep(pauses[min(attempt, len(pauses) - 1)])
+    if last is None:
+        return None, 0.0, money_stop
     r, started = last
     rec = dict(j)
     rec.update({"time_utc": started.isoformat(timespec="seconds"), "attempts": attempts,
@@ -399,17 +428,19 @@ def run_one(j, keys, dry):
     if "error" in r:
         rec.update({"status": "missing", "error": r["error"]})
     elif r["outcome"] == "unusual":
-        rec.update({"status": "missing", "error": f"unusual stop after retries: {r['stop']}",
+        why = "money limit reached before a retry" if money_stop else "unusual stop after retries"
+        rec.update({"status": "missing", "error": f"{why}: {r['stop']}",
                     "text": r["text"], "stop": r["stop"], "reply_model": r["reply_model"],
                     "tokens_in": r["tokens_in"], "tokens_out": r["tokens_out"]})
     else:
         rec.update({"status": r["outcome"], "text": r["text"], "stop": r["stop"],
                     "reply_model": r["reply_model"], "tokens_in": r["tokens_in"],
-                    "tokens_out": r["tokens_out"], "usage": r["usage"]})
-    return rec, total_cost
+                    "tokens_out": r["tokens_out"], "usage": r["usage"],
+                    "reply_settings": r.get("reply_settings")})
+    return rec, total_cost, money_stop
 
 
-def run_jobs(jobs_by_model, path, keys, ledger, dry, limit_total=None, shares=None):
+def run_jobs(jobs_by_model, path, keys, ledger, dry, limit_total=None, shares=None, prices=None):
     """Run each model's jobs in its own thread. Stops a model (or everything) at its money limit."""
     done = {r["job_id"] for r in load_records(path)}
     stop_all = threading.Event()
@@ -417,24 +448,37 @@ def run_jobs(jobs_by_model, path, keys, ledger, dry, limit_total=None, shares=No
 
     def worker(model, jobs):
         todo = [j for j in jobs if j["job_id"] not in done]
+        limit_model = shares.get(model) if shares else None
         for n, j in enumerate(todo, 1):
             if stop_all.is_set():
                 return
-            wc = worst_case(model)
-            ok = ledger.reserve(model, wc, limit_total=limit_total,
-                                limit_model=shares.get(model) if shares else None)
-            if not ok:
+            if prices and list(price(model)) != list(prices[model]):
+                notes.append(f"Stopped {model}: its price changed today. Shares must be re-set and shown to Yashraj.")
+                return
+            rec, c, money_stop = run_one(j, keys, dry, ledger, limit_total, limit_model)
+            if rec is not None and rec["status"] == "missing" and FATAL.search(rec.get("error", "")):
+                notes.append(f"Stopped {model}: {rec['error'][:200]} (key, sign-in, access or model name "
+                             "problem; this call is not saved, so a restart tries it again).")
+                if limit_total is not None:
+                    stop_all.set()
+                return
+            if rec is not None:
+                save(path, rec)
+                print(f"  {model:22} {n:3}/{len(todo)}  {rec['prompt_id']} {rec['id_type']:8} run {rec['run']}  "
+                      f"{rec['status']:10} ${c:.4f}   total ${ledger.total():.4f}", flush=True)
+            if rec is not None and (rec.get("tokens_out") or 0) > CONFIG["max_output_tokens"]:
+                notes.append(f"Stopped {model}: a reply billed {rec['tokens_out']} output tokens, over the "
+                             f"{CONFIG['max_output_tokens']} cap the worst-case check assumes. Ask Yashraj.")
+                if limit_total is not None:
+                    stop_all.set()
+                return
+            if money_stop:
                 if limit_total is not None:
                     notes.append(f"Hard stop: the next {model} call could pass ${limit_total:.2f} in all.")
                     stop_all.set()
                 else:
-                    notes.append(f"Hard stop for {model}: the next call could pass its ${shares[model]:.2f} share.")
+                    notes.append(f"Hard stop for {model}: the next call could pass its ${limit_model:.2f} share.")
                 return
-            rec, c = run_one(j, keys, dry)
-            ledger.settle(model, wc, c)
-            save(path, rec)
-            print(f"  {model:22} {n:3}/{len(todo)}  {rec['prompt_id']} {rec['id_type']:8} run {rec['run']}  "
-                  f"{rec['status']:10} ${c:.4f}   total ${ledger.total():.4f}", flush=True)
 
     threads = [threading.Thread(target=worker, args=(m, js)) for m, js in jobs_by_model.items()]
     for t in threads:
@@ -594,7 +638,7 @@ def cmd_full(dry):
         ledger.add_spent(m, s)
     print(f"Full run: {runs} runs per prompt, {len(SPEC['prompts']) * len(ID_TYPES) * runs} calls per model.")
     notes = run_jobs({m: full_jobs(m, runs) for m in CONFIG["full_models"]}, d / "full.jsonl",
-                     keys, ledger, dry, shares=shares)
+                     keys, ledger, dry, shares=shares, prices=plan["prices_at_plan"])
     if notes:
         print("\n".join(notes))
     print(f"Full run finished. Spent ${ledger.total():.4f}. Next: python3 analyze.py full" + (" --dry" if dry else ""))
