@@ -43,7 +43,8 @@ FROZEN = ["DESIGN.md", "config.json", "prompts.json", "fakes.json", "make_fakes.
           "score.py", "analyze.py", "run.py"]
 
 BLOCKED_GEMINI = {"SAFETY", "SPII", "PROHIBITED_CONTENT", "BLOCKLIST", "OTHER", "MODEL_ARMOR"}
-FATAL = re.compile(r"HTTP (401|403|404):|no Google sign-in")
+FATAL = re.compile(r"HTTP (401|402|403|404):|no Google sign-in|insufficient_quota|credit_balance|"
+                   r"credit balance|billing_error|spend_limit|spend limit|spend cap|usage_limit_exceeded", re.I)
 
 
 # ---------- money ----------
@@ -159,6 +160,7 @@ def hide_secrets(text):
     for w in HIDE_WORDS:
         text = text.replace(w, "[project]")
     text = re.sub(r"projects/\d+", "projects/[number]", text)
+    text = re.sub(r"(?<![0-9])[0-9]{8,}(?![0-9])", "[number]", text)
     text = re.sub(r"[\w.+-]+@[\w-]+\.[\w.]+", "[email]", text)
     return text[:500]
 
@@ -190,8 +192,11 @@ class Keys:
     def google_token(self):
         with self._lock:
             if not self._google_token or time.time() - self._google_time > 1200:
-                r = subprocess.run(["gcloud", "auth", "application-default", "print-access-token"],
-                                   capture_output=True, text=True)
+                try:
+                    r = subprocess.run(["gcloud", "auth", "application-default", "print-access-token"],
+                                       capture_output=True, text=True, timeout=120)
+                except (OSError, subprocess.TimeoutExpired) as e:
+                    raise RuntimeError("no Google sign-in: gcloud could not run: " + hide_secrets(repr(e)))
                 if r.returncode != 0:
                     raise RuntimeError("no Google sign-in: " + hide_secrets(r.stderr))
                 self._google_token = r.stdout.strip()
@@ -411,6 +416,8 @@ def run_one(j, keys, dry, ledger, limit_total=None, limit_model=None):
         ledger.settle(j["model"], wc, c)
         total_cost += c
         last = (r, started)
+        if "error" not in r and (r.get("tokens_out") or 0) > CONFIG["max_output_tokens"]:
+            break  # billed past the cap the worst case assumes: no retry (the worker stops this model)
         if "error" not in r and r["outcome"] != "unusual":
             break
         if "error" in r and FATAL.search(r["error"]):
@@ -457,8 +464,8 @@ def run_jobs(jobs_by_model, path, keys, ledger, dry, limit_total=None, shares=No
                 return
             rec, c, money_stop = run_one(j, keys, dry, ledger, limit_total, limit_model)
             if rec is not None and rec["status"] == "missing" and FATAL.search(rec.get("error", "")):
-                notes.append(f"Stopped {model}: {rec['error'][:200]} (key, sign-in, access or model name "
-                             "problem; this call is not saved, so a restart tries it again).")
+                notes.append(f"Stopped {model}: {rec['error'][:200]} (key, sign-in, access, credit, spend limit or "
+                             "model name problem; this call is not saved, so a restart tries it again).")
                 if limit_total is not None:
                     stop_all.set()
                 return

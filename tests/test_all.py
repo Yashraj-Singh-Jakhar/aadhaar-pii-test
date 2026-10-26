@@ -231,6 +231,24 @@ class MoneyTests(unittest.TestCase):
             run.call_dry = saved
             os.environ.pop("DRY_TAG", None)
 
+    def test_out_of_credit_stops_the_model(self):
+        import run
+        for e in ('HTTP 429: {"error": {"type": "insufficient_quota", "code": "credit_balance_exhausted"}}',
+                  'HTTP 400: {"error": {"message": "Your credit balance is too low to access the Anthropic API."}}',
+                  'HTTP 402: {"error": {"type": "billing_error"}}'):
+            self.assertTrue(run.FATAL.search(e), e)
+        for e in ('HTTP 429: {"error": {"message": "Rate limit reached for requests"}}',
+                  'HTTP 429: {"error": {"status": "RESOURCE_EXHAUSTED", "message": "Quota exceeded for aiplatform"}}',
+                  'HTTP 400: {"error": {"code": "invalid_prompt"}}'):
+            self.assertFalse(run.FATAL.search(e), e)
+
+    def test_project_number_forms_are_masked(self):
+        import run
+        for e in ("consumer 'project_number:123456789012'", "used in project 123456789012",
+                  "?project=123456789012"):
+            self.assertNotIn("123456789012", run.hide_secrets(e))
+        self.assertIn("HTTP 429", run.hide_secrets("HTTP 429: slow down"))
+
     def test_error_text_is_masked(self):
         import run
         run.HIDE_WORDS.append("my-proj-123")
