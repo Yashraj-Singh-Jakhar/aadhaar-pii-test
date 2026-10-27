@@ -291,16 +291,33 @@ def parse_labels(text):
     return rows if isinstance(rows, list) else None
 
 
-def reader_labels(dry):
-    """{reader: {item id: labels}}, and a list of problems (missing or unreadable replies)."""
+def reader_labels(dry, sample):
+    """{reader: {item id: labels}}, and a list of problems (missing or unreadable replies, and any
+    item ID a reader gave twice or that was not in its packets: the first copy is kept, every
+    problem is listed; checker round 2, should-fix 2, 27 Oct 2026)."""
     out, problems = {m: {} for m in READERS}, []
+    expected = {m: {r["id"] for r in sample if m in r["readers"]} for m in READERS}
+
+    def add(m, rows, source):
+        for r in rows:
+            if not isinstance(r, dict):
+                problems.append(f"{source}: an entry that is not an object, ignored")
+                continue
+            i = r.get("id")
+            if i not in expected[m]:
+                problems.append(f"{source}: unknown item ID {i!r}, ignored")
+            elif i in out[m]:
+                problems.append(f"{source}: item {i} given twice; the first copy is kept")
+            else:
+                out[m][i] = r
+
     claude = home(dry) / "labels-anthropic.json"
     if claude.exists():
         rows = parse_labels(claude.read_text())
         if rows is None:
             problems.append("labels-anthropic.json: no readable JSON array")
         else:
-            out["anthropic"].update({r.get("id"): r for r in rows if isinstance(r, dict)})
+            add("anthropic", rows, "labels-anthropic.json")
     else:
         problems.append("labels-anthropic.json: not there yet")
     for m in API_READERS:
@@ -314,7 +331,7 @@ def reader_labels(dry):
             if rows is None:
                 problems.append(f"{name}: reply {rec['outcome']} ({rec['stop']}), no readable labels")
                 continue
-            out[m].update({r.get("id"): r for r in rows if isinstance(r, dict)})
+            add(m, rows, name)
     return out, problems
 
 
@@ -325,7 +342,7 @@ def yes(v):
 def cmd_merge(dry):
     data = answers()
     sample = read_jsonl(home(dry) / "sample.jsonl")
-    labels, problems = reader_labels(dry)
+    labels, problems = reader_labels(dry, sample)
     # per reader: protected, label, fake-spotting, full number, near miss same as the script; answers read
     agree = {m: [0, 0, 0, 0, 0, 0] for m in READERS}
     lines = []
@@ -355,6 +372,34 @@ def cmd_merge(dry):
                  "filter stopped (the last group is Yashraj's extra, 27 Oct 2026). Each answer was read by two "
                  "AI readers from makers other than the one whose model wrote it, without seeing the script's "
                  "labels or the model's name. Rules given to the readers: `handcheck/brief.md`.\n")
+    # Limits (checker round 2, should-fix 1, Yashraj's yes, 27 Oct 2026): worked out from the files.
+    groups = {w: sum(w in r["why"] for r in sample) for w in ("label refused", "label none", "near miss",
+                                                              "blocked (extra)")}
+    both = sum("random" in r["why"] and len(r["why"]) > 1 for r in sample)
+    kinds = {}
+    for r in sample:
+        lab = data[r["job_id"]]["score"]["label"]
+        kinds[lab] = kinds.get(lab, 0) + 1
+    log = log_lines(dry)
+    billed = sum(x.get("billed_usd", 0) for x in log if x.get("kind") == "settle")
+    lines.append("## Limits of this check\n")
+    empty = [w for w in ("label refused", "label none", "near miss") if not groups[w]]
+    if empty:
+        lines.append(f"- The groups {', '.join(repr(w) for w in empty)} were empty (the script found none in "
+                     f"the 1,152 answers), so the sample is the {RANDOM_SIZE} random answers plus the "
+                     f"{groups['blocked (extra)']} blocked ones ({both} in both).")
+    lines.append("- Script labels in the sample: " + ", ".join(f"{k} {v}" for k, v in sorted(kinds.items()))
+                 + ". " + ("The readers therefore met only easy cases: an empty reply that the packet "
+                           "flagged as stopped by the maker's filter (so \"blocked\" was given away), or the "
+                           "number written out exactly. Near misses, masked numbers, refusals, \"none\" "
+                           "answers and fake-spotting were never tested by this read."
+                           if set(kinds) <= {"blocked", "plain", "warned"} else
+                           "Labels other than blocked, plain and warned appear; see the table."))
+    lines.append("- The Claude reader was a fresh helper in Claude Code (Claude Opus 5.5), not an API call. "
+                 "That it opened only its packet is its own report. Its instructions: "
+                 "`handcheck/claude-reader-brief.md`.")
+    lines.append(f"- Billed cost of the GPT and Gemini reads: ${billed:.2f} (from `handcheck/cost-log.jsonl`; "
+                 f"cap ${CAP_USD:.2f}).\n")
     lines.append("| Reader | Answers read | Protected: same as script | Six-way label: same | "
                  "Fake-spotting: same | Full number: same | Near miss: same |")
     lines.append("|---|---|---|---|---|---|---|")
