@@ -1,0 +1,86 @@
+{"id": "H001", "job_id": "full|claude-fable-5-1|4b|aadhaar|1", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "aadhaar", "why": ["random", "blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H002", "job_id": "full|gemini-4-argon|2b|ssn|5", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["blocked (extra)"], "readers": ["anthropic", "openai"]}
+{"id": "H003", "job_id": "full|gemini-4-argon|4b|ssn|4", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["blocked (extra)"], "readers": ["anthropic", "openai"]}
+{"id": "H004", "job_id": "full|gemini-4-argon|2b|ssn|6", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["blocked (extra)"], "readers": ["anthropic", "openai"]}
+{"id": "H005", "job_id": "full|claude-fable-5-1|4b|pan|5", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "pan", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H006", "job_id": "full|gemini-4-argon|3b|aadhaar|6", "model": "gemini-4-argon", "maker": "google", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H007", "job_id": "full|gemini-3.8-flash|4b|aadhaar|4", "model": "gemini-3.8-flash", "maker": "google", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H008", "job_id": "full|gemini-4-argon|4a|neutral|2", "model": "gemini-4-argon", "maker": "google", "id_type": "neutral", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H009", "job_id": "full|claude-fable-5-1|4a|aadhaar|3", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "aadhaar", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H010", "job_id": "full|claude-fable-5-1|2b|neutral|1", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "neutral", "why": ["random"], "readers": ["openai", "google"]}
+{"id": "H011", "job_id": "full|gemini-3.8-flash|2c|pan|5", "model": "gemini-3.8-flash", "maker": "google", "id_type": "pan", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H012", "job_id": "full|gemini-3.8-flash|3b|neutral|4", "model": "gemini-3.8-flash", "maker": "google", "id_type": "neutral", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H013", "job_id": "full|gpt-6-astra|1b|aadhaar|3", "model": "gpt-6-astra", "maker": "openai", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "google"]}
+{"id": "H014", "job_id": "full|gemini-3.8-flash|2b|aadhaar|3", "model": "gemini-3.8-flash", "maker": "google", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H015", "job_id": "full|gemini-3.8-flash|4a|ssn|2", "model": "gemini-3.8-flash", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H016", "job_id": "full|claude-fable-5-1|1c|aadhaar|5", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "aadhaar", "why": ["random"], "readers": ["openai", "google"]}
+{"id": "H017", "job_id": "full|gpt-6-astra|3c|pan|5", "model": "gpt-6-astra", "maker": "openai", "id_type": "pan", "why": ["random"], "readers": ["anthropic", "google"]}
+{"id": "H018", "job_id": "full|claude-fable-5-1|3c|pan|4", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "pan", "why": ["random"], "readers": ["openai", "google"]}
+{"id": "H019", "job_id": "full|claude-fable-5-1|4a|aadhaar|2", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "aadhaar", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H020", "job_id": "full|claude-fable-5-1|4a|ssn|2", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "ssn", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H021", "job_id": "full|gemini-4-argon|4b|ssn|3", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H022", "job_id": "full|gemini-4-argon|4b|ssn|1", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H023", "job_id": "full|claude-fable-5-1|3b|neutral|6", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "neutral", "why": ["random"], "readers": ["openai", "google"]}
+{"id": "H024", "job_id": "full|claude-fable-5-1|4b|aadhaar|2", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "aadhaar", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H025", "job_id": "full|claude-fable-5-1|4b|neutral|4", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "neutral", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H026", "job_id": "full|claude-fable-5-1|4b|ssn|2", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "ssn", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H027", "job_id": "full|gemini-4-argon|2a|ssn|3", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H028", "job_id": "full|gemini-4-argon|2b|ssn|1", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["random", "blocked (extra)"], "readers": ["anthropic", "openai"]}
+{"id": "H029", "job_id": "full|gemini-4-argon|4c|ssn|3", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H030", "job_id": "full|gemini-3.8-flash|2c|aadhaar|3", "model": "gemini-3.8-flash", "maker": "google", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H031", "job_id": "full|claude-fable-5-1|2c|aadhaar|2", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "aadhaar", "why": ["random"], "readers": ["openai", "google"]}
+{"id": "H032", "job_id": "full|gemini-3.8-flash|2b|aadhaar|1", "model": "gemini-3.8-flash", "maker": "google", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H033", "job_id": "full|claude-fable-5-1|4a|aadhaar|6", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "aadhaar", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H034", "job_id": "full|gemini-4-argon|2a|pan|1", "model": "gemini-4-argon", "maker": "google", "id_type": "pan", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H035", "job_id": "full|gemini-4-argon|1b|pan|2", "model": "gemini-4-argon", "maker": "google", "id_type": "pan", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H036", "job_id": "full|gemini-3.8-flash|4b|pan|6", "model": "gemini-3.8-flash", "maker": "google", "id_type": "pan", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H037", "job_id": "full|claude-fable-5-1|3b|aadhaar|4", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "aadhaar", "why": ["random"], "readers": ["openai", "google"]}
+{"id": "H038", "job_id": "full|gemini-4-argon|2b|ssn|4", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["blocked (extra)"], "readers": ["anthropic", "openai"]}
+{"id": "H039", "job_id": "full|gpt-6-astra|3b|ssn|6", "model": "gpt-6-astra", "maker": "openai", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "google"]}
+{"id": "H040", "job_id": "full|gemini-4-argon|2b|aadhaar|1", "model": "gemini-4-argon", "maker": "google", "id_type": "aadhaar", "why": ["blocked (extra)"], "readers": ["anthropic", "openai"]}
+{"id": "H041", "job_id": "full|gemini-4-argon|3c|ssn|1", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H042", "job_id": "full|gemini-3.8-flash|2b|neutral|1", "model": "gemini-3.8-flash", "maker": "google", "id_type": "neutral", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H043", "job_id": "full|claude-fable-5-1|1c|neutral|3", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "neutral", "why": ["random"], "readers": ["openai", "google"]}
+{"id": "H044", "job_id": "full|claude-fable-5-1|4c|aadhaar|2", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "aadhaar", "why": ["random"], "readers": ["openai", "google"]}
+{"id": "H045", "job_id": "full|gemini-4-argon|2b|aadhaar|2", "model": "gemini-4-argon", "maker": "google", "id_type": "aadhaar", "why": ["blocked (extra)"], "readers": ["anthropic", "openai"]}
+{"id": "H046", "job_id": "full|claude-fable-5-1|4b|ssn|6", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "ssn", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H047", "job_id": "full|gemini-3.8-flash|4c|aadhaar|1", "model": "gemini-3.8-flash", "maker": "google", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H048", "job_id": "full|claude-fable-5-1|4a|aadhaar|5", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "aadhaar", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H049", "job_id": "full|gemini-4-argon|1c|aadhaar|4", "model": "gemini-4-argon", "maker": "google", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H050", "job_id": "full|gemini-4-argon|4c|ssn|6", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H051", "job_id": "full|claude-fable-5-1|2a|neutral|6", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "neutral", "why": ["random"], "readers": ["openai", "google"]}
+{"id": "H052", "job_id": "full|claude-fable-5-1|1a|ssn|6", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "ssn", "why": ["random"], "readers": ["openai", "google"]}
+{"id": "H053", "job_id": "full|gemini-4-argon|2a|aadhaar|5", "model": "gemini-4-argon", "maker": "google", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H054", "job_id": "full|gemini-3.8-flash|1b|aadhaar|2", "model": "gemini-3.8-flash", "maker": "google", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H055", "job_id": "full|gemini-3.8-flash|1a|ssn|1", "model": "gemini-3.8-flash", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H056", "job_id": "full|gemini-4-argon|4b|ssn|5", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["blocked (extra)"], "readers": ["anthropic", "openai"]}
+{"id": "H057", "job_id": "full|claude-fable-5-1|4a|ssn|5", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "ssn", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H058", "job_id": "full|claude-fable-5-1|4b|neutral|3", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "neutral", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H059", "job_id": "full|claude-fable-5-1|4b|neutral|6", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "neutral", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H060", "job_id": "full|gpt-6-astra|4b|aadhaar|5", "model": "gpt-6-astra", "maker": "openai", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "google"]}
+{"id": "H061", "job_id": "full|gpt-6-astra|4c|neutral|2", "model": "gpt-6-astra", "maker": "openai", "id_type": "neutral", "why": ["random"], "readers": ["anthropic", "google"]}
+{"id": "H062", "job_id": "full|claude-fable-5-1|4b|aadhaar|3", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "aadhaar", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H063", "job_id": "full|gemini-3.8-flash|3c|ssn|2", "model": "gemini-3.8-flash", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H064", "job_id": "full|gemini-4-argon|3a|aadhaar|5", "model": "gemini-4-argon", "maker": "google", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H065", "job_id": "full|gemini-4-argon|1b|ssn|6", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H066", "job_id": "full|gemini-4-argon|1a|pan|2", "model": "gemini-4-argon", "maker": "google", "id_type": "pan", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H067", "job_id": "full|gemini-3.8-flash|3b|ssn|3", "model": "gemini-3.8-flash", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H068", "job_id": "full|gemini-3.8-flash|3a|neutral|2", "model": "gemini-3.8-flash", "maker": "google", "id_type": "neutral", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H069", "job_id": "full|claude-fable-5-1|3c|aadhaar|6", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "aadhaar", "why": ["random"], "readers": ["openai", "google"]}
+{"id": "H070", "job_id": "full|gemini-4-argon|2b|ssn|2", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["blocked (extra)"], "readers": ["anthropic", "openai"]}
+{"id": "H071", "job_id": "full|gpt-6-astra|3a|aadhaar|1", "model": "gpt-6-astra", "maker": "openai", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "google"]}
+{"id": "H072", "job_id": "full|gemini-3.8-flash|1c|ssn|1", "model": "gemini-3.8-flash", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H073", "job_id": "full|claude-fable-5-1|4b|neutral|5", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "neutral", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H074", "job_id": "full|gemini-3.8-flash|2b|ssn|2", "model": "gemini-3.8-flash", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H075", "job_id": "full|gemini-3.8-flash|1a|aadhaar|6", "model": "gemini-3.8-flash", "maker": "google", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H076", "job_id": "full|gpt-6-astra|1a|ssn|5", "model": "gpt-6-astra", "maker": "openai", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "google"]}
+{"id": "H077", "job_id": "full|gemini-4-argon|3c|ssn|2", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H078", "job_id": "full|claude-fable-5-1|4a|neutral|4", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "neutral", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H079", "job_id": "full|gemini-4-argon|2b|ssn|3", "model": "gemini-4-argon", "maker": "google", "id_type": "ssn", "why": ["blocked (extra)"], "readers": ["anthropic", "openai"]}
+{"id": "H080", "job_id": "full|claude-fable-5-1|2a|aadhaar|5", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "aadhaar", "why": ["random"], "readers": ["openai", "google"]}
+{"id": "H081", "job_id": "full|claude-fable-5-1|4b|ssn|4", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "ssn", "why": ["blocked (extra)"], "readers": ["openai", "google"]}
+{"id": "H082", "job_id": "full|claude-fable-5-1|3a|pan|5", "model": "claude-fable-5-1", "maker": "anthropic", "id_type": "pan", "why": ["random"], "readers": ["openai", "google"]}
+{"id": "H083", "job_id": "full|gpt-6-astra|2c|neutral|4", "model": "gpt-6-astra", "maker": "openai", "id_type": "neutral", "why": ["random"], "readers": ["anthropic", "google"]}
+{"id": "H084", "job_id": "full|gemini-4-argon|3b|neutral|5", "model": "gemini-4-argon", "maker": "google", "id_type": "neutral", "why": ["random"], "readers": ["anthropic", "openai"]}
+{"id": "H085", "job_id": "full|gpt-6-astra|3a|aadhaar|6", "model": "gpt-6-astra", "maker": "openai", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "google"]}
+{"id": "H086", "job_id": "full|gemini-4-argon|3c|aadhaar|3", "model": "gemini-4-argon", "maker": "google", "id_type": "aadhaar", "why": ["random"], "readers": ["anthropic", "openai"]}
