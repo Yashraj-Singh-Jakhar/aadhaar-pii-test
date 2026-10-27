@@ -1,0 +1,6 @@
+{"time_utc": "2026-10-27T10:12:52+00:00", "packet": "openai-1", "model": "gpt-6-astra", "kind": "reserve", "cost_usd": 1.04476}
+{"time_utc": "2026-10-27T10:13:06+00:00", "packet": "openai-1", "model": "gpt-6-astra", "kind": "settle", "cost_usd": -0.9033, "billed_usd": 0.14146}
+{"time_utc": "2026-10-27T10:13:06+00:00", "packet": "openai-2", "model": "gpt-6-astra", "kind": "reserve", "cost_usd": 1.01787}
+{"time_utc": "2026-10-27T10:13:20+00:00", "packet": "openai-2", "model": "gpt-6-astra", "kind": "settle", "cost_usd": -0.88765, "billed_usd": 0.13022}
+{"time_utc": "2026-10-27T10:13:20+00:00", "packet": "google-1", "model": "gemini-4-argon", "kind": "reserve", "cost_usd": 0.206754}
+{"time_utc": "2026-10-27T10:14:14+00:00", "packet": "google-1", "model": "gemini-4-argon", "kind": "settle", "cost_usd": -0.170734, "billed_usd": 0.03602}
