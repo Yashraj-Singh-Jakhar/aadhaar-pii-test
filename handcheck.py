@@ -9,6 +9,7 @@ Commands:
   python3 handcheck.py packets    write one reading packet per reader and batch; no calls
   python3 handcheck.py plan       list the paid calls and their worst-case cost; no calls
   python3 handcheck.py run        send the packets to GPT-6 Astra and Gemini 4 Argon; hard stop at $3.00
+                                  (add --resend <packet name> to send a packet the cost log already holds)
   python3 handcheck.py merge      compare every reader's labels with the script's; write the results
 Add --dry to use a stand-in reader that makes no calls (files go to handcheck-dry/).
 
@@ -20,8 +21,11 @@ and Gemini 4 Argon (by API). Readers never see the script's labels or which mode
 
 Money: before any call, the worst case of every call (every byte of its packet counted as one input
 token, plus the full output cap) must fit under the cap; before each call, the money already booked
-plus that call's worst case must fit too. No retries. A call that fails without a usage record is
-booked at its worst case, as in run.py. Keys are typed in hidden, as in run.py, and never saved.
+plus that call's worst case must fit too. Each call's worst case is written to the cost log BEFORE the
+call is sent, and settled to the billed cost after it returns, so a run stopped mid-call keeps the
+worst case booked. A packet with any line in the cost log is never sent again unless Yashraj names it
+with --resend (checker round 1, M1, 27 Oct 2026). No retries. A call that fails without a usage record
+stays booked at its worst case, as in run.py. A reply billed past the output cap stops the run, as in run.py. Keys are typed in hidden, as in run.py, and never saved.
 Plain Python; nothing to install.
 """
 import datetime
@@ -175,9 +179,20 @@ def worst(model, text):
     return run.cost(model, len(text.encode()), run.CONFIG["max_output_tokens"])
 
 
-def booked(dry):
+def log_lines(dry):
     log = home(dry) / "cost-log.jsonl"
-    return sum(r["cost_usd"] for r in read_jsonl(log)) if log.exists() else 0.0
+    return read_jsonl(log) if log.exists() else []
+
+
+def booked(dry):
+    """Every reserved worst case plus every settlement (billed cost minus the worst case)."""
+    return sum(r["cost_usd"] for r in log_lines(dry))
+
+
+def log_cost(dry, **line):
+    with open(home(dry) / "cost-log.jsonl", "a") as f:
+        f.write(json.dumps(line) + "\n")
+        f.flush()
 
 
 def paid_calls(dry):
@@ -205,16 +220,23 @@ def call_dry(keys, model, prompt):
             "tokens_in": len(prompt) // 4, "tokens_out": len(text) // 4, "usage": {}}
 
 
-def cmd_run(dry):
+def cmd_run(dry, resend=None):
     calls = paid_calls(dry)
     total = sum(c[3] for c in calls)
     if total > CAP_USD:
         sys.exit(f"Worst case ${total:.2f} is over the ${CAP_USD:.2f} cap: no calls made.")
     raw = home(dry) / "raw"
     raw.mkdir(exist_ok=True)
-    todo = [c for c in calls if not (raw / f"{c[1]}.json").exists()]
+    tried = {r["packet"] for r in log_lines(dry)}
+    if resend and resend not in {c[1] for c in calls}:
+        sys.exit(f"No packet named {resend}. Nothing sent.")
+    todo = [c for c in calls if not (raw / f"{c[1]}.json").exists()
+            and (c[1] not in tried or c[1] == resend)]
+    for c in calls:
+        if c[1] in tried and c[1] != resend and not (raw / f"{c[1]}.json").exists():
+            print(f"{c[1]}: tried before with no saved reply; not sent again (Yashraj may name it with --resend).")
     if not todo:
-        sys.exit("Every packet already has a reply. Nothing sent.")
+        sys.exit("Nothing to send.")
     keys = run.Keys(dry)
     keys.ask({c[0] for c in todo})
     for m, name, text, wc in todo:
@@ -225,6 +247,7 @@ def cmd_run(dry):
         model = READERS[m]
         print(f"{name}: sending to {model} ...", flush=True)
         started = now()
+        log_cost(dry, time_utc=started, packet=name, model=model, kind="reserve", cost_usd=round(wc, 6))
         try:
             r = call_dry(keys, model, text) if dry else run.CALLERS[m](keys, model, text)
         except Exception as e:
@@ -236,9 +259,8 @@ def cmd_run(dry):
         else:
             c = wc
             r["error"] += " [no usage record: booked at the worst case]"
-        with open(home(dry) / "cost-log.jsonl", "a") as f:
-            f.write(json.dumps({"time_utc": started, "packet": name, "model": model,
-                                "cost_usd": round(c, 6)}) + "\n")
+        log_cost(dry, time_utc=now(), packet=name, model=model, kind="settle",
+                 cost_usd=round(c - wc, 6), billed_usd=round(c, 6))
         if "error" in r:
             print(f"  failed, nothing saved as a reply: {r['error']}")
             print("  Stopped. No retry; tell the chat.")
@@ -249,6 +271,9 @@ def cmd_run(dry):
              "tokens_out": r["tokens_out"], "cost_usd": round(c, 6), "text": r["text"]},
             ensure_ascii=False, indent=1))
         print(f"  {r['outcome']} ({r['stop']}), ${c:.4f}; booked so far ${booked(dry):.4f}")
+        if (r.get("tokens_out") or 0) > run.CONFIG["max_output_tokens"]:
+            print("  STOP: billed past the output cap the worst case assumes. Tell the chat.")
+            break
     print(f"Booked in all: ${booked(dry):.4f} (cap ${CAP_USD:.2f})")
 
 
@@ -294,14 +319,16 @@ def reader_labels(dry):
 
 
 def yes(v):
-    return str(v).strip().lower() in ("yes", "true")
+    return re.sub(r"[^a-z]", "", str(v).lower()) in ("yes", "true")
 
 
 def cmd_merge(dry):
     data = answers()
     sample = read_jsonl(home(dry) / "sample.jsonl")
     labels, problems = reader_labels(dry)
-    lines, table, agree = [], [], {m: [0, 0, 0, 0] for m in READERS}  # protected ok, label ok, spot ok, read
+    # per reader: protected, label, fake-spotting, full number, near miss same as the script; answers read
+    agree = {m: [0, 0, 0, 0, 0, 0] for m in READERS}
+    lines = []
     disagreements = []
     for row in sample:
         s = data[row["job_id"]]["score"]
@@ -313,24 +340,27 @@ def cmd_merge(dry):
             p_ok = yes(r.get("protected")) == s["protected"]
             l_ok = str(r.get("label", "")).strip().lower() == s["label"]
             f_ok = yes(r.get("fake_spotted")) == s["fake_spot"]
+            n_ok = yes(r.get("full_number")) == s["full"]
+            x_ok = yes(r.get("near_miss")) == s["near_miss"]
             a = agree[m]
-            a[0] += p_ok
-            a[1] += l_ok
-            a[2] += f_ok
-            a[3] += 1
-            if not (p_ok and l_ok and f_ok) or r.get("note"):
-                disagreements.append((row, m, r, s, p_ok, l_ok, f_ok))
+            for i, ok in enumerate((p_ok, l_ok, f_ok, n_ok, x_ok)):
+                a[i] += ok
+            a[5] += 1
+            oks = {"protected": p_ok, "label": l_ok, "spotted": f_ok, "full number": n_ok, "near miss": x_ok}
+            if not all(oks.values()) or r.get("note"):
+                disagreements.append((row, m, r, s, oks))
     lines.append("# Results: stage 5 hand check (AI readers, not a human check)\n")
     lines.append(f"Sample: {len(sample)} answers: {RANDOM_SIZE} drawn at random (seed {SEED}) from all 1,152, "
                  "plus every answer labelled refused or none, every near miss, and every answer a maker's "
                  "filter stopped (the last group is Yashraj's extra, 27 Oct 2026). Each answer was read by two "
                  "AI readers from makers other than the one whose model wrote it, without seeing the script's "
                  "labels or the model's name. Rules given to the readers: `handcheck/brief.md`.\n")
-    lines.append("| Reader | Answers read | Protected: same as script | Six-way label: same | Fake-spotting: same |")
-    lines.append("|---|---|---|---|---|")
+    lines.append("| Reader | Answers read | Protected: same as script | Six-way label: same | "
+                 "Fake-spotting: same | Full number: same | Near miss: same |")
+    lines.append("|---|---|---|---|---|---|---|")
     for m in READERS:
         a = agree[m]
-        lines.append(f"| {READERS[m]} | {a[3]} | {a[0]} | {a[1]} | {a[2]} |")
+        lines.append(f"| {READERS[m]} | {a[5]} | {a[0]} | {a[1]} | {a[2]} | {a[3]} | {a[4]} |")
     lines.append("\n## Every difference or note (Yashraj reads these)\n")
     if not disagreements:
         lines.append("None.")
@@ -338,8 +368,8 @@ def cmd_merge(dry):
         lines.append("| Item | Model | ID type | Reader | Script: protected / label / spotted | "
                      "Reader: protected / label / spotted | Differs on | Reader's note |")
         lines.append("|---|---|---|---|---|---|---|---|")
-        for row, m, r, s, p_ok, l_ok, f_ok in disagreements:
-            on = ", ".join(w for w, ok in (("protected", p_ok), ("label", l_ok), ("spotted", f_ok)) if not ok)
+        for row, m, r, s, oks in disagreements:
+            on = ", ".join(w for w, ok in oks.items() if not ok)
             note = str(r.get("note") or "").replace("|", "/").replace("\n", " ")
             lines.append(f"| {row['id']} | {row['model']} | {row['id_type']} | {READERS[m]} | "
                          f"{'yes' if s['protected'] else 'no'} / {s['label']} / {'yes' if s['fake_spot'] else 'no'} | "
@@ -366,11 +396,21 @@ def main():
     args = sys.argv[1:]
     dry = "--dry" in args
     args = [a for a in args if a != "--dry"]
+    resend = None
+    if "--resend" in args:
+        i = args.index("--resend")
+        if i + 1 >= len(args):
+            sys.exit(__doc__)
+        resend = args[i + 1]
+        del args[i:i + 2]
     commands = {"sample": cmd_sample, "packets": cmd_packets, "plan": cmd_plan,
                 "run": cmd_run, "merge": cmd_merge}
-    if len(args) != 1 or args[0] not in commands:
+    if len(args) != 1 or args[0] not in commands or (resend and args[0] != "run"):
         sys.exit(__doc__)
-    commands[args[0]](dry)
+    if resend:
+        cmd_run(dry, resend)
+    else:
+        commands[args[0]](dry)
 
 
 if __name__ == "__main__":
