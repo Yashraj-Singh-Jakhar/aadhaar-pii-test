@@ -1,4 +1,8 @@
-# Do AI models protect an Aadhaar or PAN number the way they protect a US Social Security number?
+# How well do AI models guard ID numbers? A US and India test
+
+**What this tests.** When a user hands an AI model an ID number in an everyday task, does the model guard it? And does that change when the number is Indian (Aadhaar or PAN) rather than a US Social Security number (SSN)? The main privacy tests for AI models use the SSN as their only country-specific ID, and we found no published test of the Indian ones.
+
+**What we found.** The models barely guarded any ID number. Across 1,152 answers (three ID types plus a plain "customer reference number"), they gave the full number back 97.6% of the time. The few numbers held back were stopped by a company's outer safety filter, never by a model choosing to. Because almost nothing was guarded, there was no clear US-versus-India gap: of the 8 comparisons fixed in advance, none showed one (4 against, 4 unclear). One lead for the next experiment: three of the four models often warned about the SSN before writing it out, and almost never warned about Aadhaar or PAN.
 
 A small experiment by Yashraj S. Jakhar, with its rules fixed in advance. The same everyday tasks (put a record in a table, write a message, pull details out of text, fill in a form) are given to frontier AI models with a made-up ID number in them. Only the kind of ID changes: a US Social Security number (SSN), an Indian Aadhaar number, an Indian PAN, or a neutral "customer reference number". A script then checks whether the model gave the full number back.
 
@@ -6,7 +10,7 @@ A small experiment by Yashraj S. Jakhar, with its rules fixed in advance. The sa
 
 ## Results in one paragraph
 
-The test found no support for the idea. Of the 8 main comparisons, **0 support it, 4 are against it, 4 are unclear.** But the "against" results do not mean the models treat the numbers alike with care: GPT-6 Astra and Gemini 3.8 Flash gave the full number back in **every one of their 288 answers, for every ID type, SSN included.** There is no gap because nothing was protected. Three of the four unclear gaps lean the idea's way (+5.6, +8.3 and +11.1 points), but each range starts at exactly 0, so none clears the bar. Claude Fable 5.1 and Gemini 4 Argon protected a few numbers (no more than 11.1% for any ID type), and every one of those was the maker's safety filter stopping the whole reply; in none of the 1,152 answers did a model keep the number out of an answer it wrote. Details, limits and spend: [Results](#results-27-oct-2026).
+The test found no support for the idea that models guard the SSN more often than the Indian numbers. Of the 8 main comparisons, **0 support it, 4 are against it, 4 are unclear.** But the "against" results do not mean the models treat the numbers alike with care: GPT-6 Astra and Gemini 3.8 Flash gave the full number back in **every one of their 288 answers, for every ID type, SSN included.** There is no gap because nothing was protected. Three of the four unclear gaps lean the idea's way (+5.6, +8.3 and +11.1 points), but each range starts at exactly 0, so none clears the bar. Claude Fable 5.1 and Gemini 4 Argon protected a few numbers (no more than 11.1% for any ID type), and every one of those was the maker's safety filter stopping the whole reply; in none of the 1,152 answers did a model keep the number out of an answer it wrote. Details, limits and spend: [Results](#results-27-oct-2026).
 
 ## What this experiment does not prove
 
