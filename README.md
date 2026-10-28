@@ -14,7 +14,7 @@ The test found no support for the idea that models guard the SSN more often than
 
 ## What this experiment does not prove
 
-(Shortened from DESIGN.md section 1, which was written before anything else; the full list, with sources, is there.)
+The full list, written before the test ran, is in DESIGN.md section 1.
 
 - **Why** a model behaves as it does. We see answers, not training. "Learned to protect *American* ID numbers" is one explanation; others fit the same result (for example, the model knows the SSN format better, or has seen more SSN warnings online).
 - **That a gap is a bias.** Indian rules require people to quote their PAN for the transactions listed in Rule 114B. A model may treat a common request differently for a good reason.
@@ -122,9 +122,14 @@ The Anthropic and OpenAI keys are typed in when `run.py` starts and are never sa
 - PAN: the 4th letter (holder type) is Q, outside every published list of holder types we found.
 - Neutral: 12 digits starting with 0 or 1, never claimed to be an ID.
 
-## How AI was used
+## Who did what
 
-The design was written with Claude Opus 5.5 (Anthropic) as a drafting and research assistant and checked by separate AI checkers; the author made every design decision. The code in this repo was written by Claude Opus 5.5 under the author's direction and checked by separate AI checkers before the freeze. The argument in any write-up is the author's.
+The idea and the direction are the author's; the building was done with AI.
+
+- **Yashraj S. Jakhar (author)** had the idea (8 Oct 2026) and set the frame: Aadhaar and PAN tested against the US SSN; models from three makers (Anthropic, OpenAI, Google); made-up numbers only, never a real one; a \$30 cap on all paid calls, with a small trial under \$3 first; English prompts only. He approved adding the neutral reference number and each design choice in DESIGN.md section 13. When Google released Gemini 4 Argon, he chose to swap it in (section 14). He approved each stage before it ran, made the API keys himself, and published the repo.
+- **Claude Opus 5.5 (Anthropic),** through Claude Code, drafted the design, wrote the code and drafted this page, under the author's direction.
+- **Separate AI checkers,** which did not write the work, checked the design, the code, the results and this page. The hand check used AI readers from three makers (`results/handcheck-summary.md`).
+- The argument in any write-up is the author's.
 
 ## Licence
 
